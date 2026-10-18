@@ -1,65 +1,42 @@
-import AWS from "aws-sdk";
-import { nanoid } from "nanoid";
+import { v2 as cloudinary } from "cloudinary";
 import Course from "../models/course";
 import Completed from "../models/completed";
 import slugify from "slugify";
-import { readFileSync } from "fs";
 import User from "../models/user";
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
-const awsConfig = {
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKeyId: process.env.AWS_SECRET_ACCESS_KEY_ID,
-  region: process.env.AWS_REGION,
-  apiVersion: process.env.AWS_API_VERSION,
-};
-const S3 = new AWS.S3(awsConfig);
+// Reads CLOUDINARY_URL from the environment.
+cloudinary.config({ secure: true });
+
+// Uploads are returned in the shape the frontend already uses:
+// Location = public URL, Bucket = Cloudinary resource type, Key = public id.
+const toMedia = (result) => ({
+  Location: result.secure_url,
+  Bucket: result.resource_type,
+  Key: result.public_id,
+});
+
 export const uploadImage = async (req, res) => {
-  // console.log(req.body);
   try {
     const { image } = req.body;
     if (!image) return res.status(400).send("No Image");
-    const base64Data = new Buffer.from(
-      image.replace(/^data:image\/\w+;base64,/, ""),
-      "base64"
-    );
-    const type = image.split(";")[0].split("/")[1];
-    const params = {
-      Bucket: "lmsoms-bucket",
-      Key: `${nanoid()}.${type}`,
-      Body: base64Data,
-      ACL: "public-read",
-      ContentEncoding: "base64",
-      ContentType: `image/${type}`,
-    };
-    S3.upload(params, (err, data) => {
-      if (err) {
-        console.log(err);
-        return res.sendStatus(400);
-      }
-      console.log(data);
-      res.send(data);
+    const result = await cloudinary.uploader.upload(image, {
+      folder: "lms/images",
     });
+    res.send(toMedia(result));
   } catch (err) {
     console.log(err);
+    res.sendStatus(400);
   }
 };
 export const removeImage = async (req, res) => {
   try {
     const { image } = req.body;
-    const params = {
-      Bucket: image.Bucket,
-      Key: image.Key,
-    };
-    S3.deleteObject(params, (err, data) => {
-      if (err) {
-        console.log(err);
-        res.sendStatus(400);
-      }
-      res.send({ ok: true });
-    });
+    await cloudinary.uploader.destroy(image.Key, { resource_type: "image" });
+    res.send({ ok: true });
   } catch (err) {
     console.log(err);
+    res.sendStatus(400);
   }
 };
 export const create = async (req, res) => {
@@ -93,31 +70,19 @@ export const read = async (req, res) => {
 };
 export const uploadVideo = async (req, res) => {
   try {
-    //console.log("req.user._id",req.user._id)
-    //console.log("req.params.instructorId",req.params.instructorId);
     if (req.user._id != req.params.instructorId) {
       return res.status(400).send("Unauthorized");
     }
     const { video } = req.files;
-    console.log("video", video);
     if (!video) return res.status(400).send("No video");
-    const params = {
-      Bucket: "lmsoms-bucket",
-      Key: `${nanoid()}.${video.type.split("/")[1]}`,
-      Body: readFileSync(video.path),
-      ACL: "public-read",
-      ContentType: video.type,
-    };
-    S3.upload(params, (err, data) => {
-      if (err) {
-        console.log(err);
-        res.sendStatus(400);
-      }
-      console.log(data);
-      res.send(data);
+    const result = await cloudinary.uploader.upload(video.path, {
+      resource_type: "video",
+      folder: "lms/videos",
     });
+    res.send(toMedia(result));
   } catch (err) {
     console.log(err);
+    res.sendStatus(400);
   }
 };
 export const removeVideo = async (req, res) => {
@@ -125,21 +90,12 @@ export const removeVideo = async (req, res) => {
     if (req.user._id != req.params.instructorId) {
       return res.status(400).send("Unauthorized");
     }
-    const { Bucket, Key } = req.body;
-    const params = {
-      Bucket,
-      Key,
-    };
-    S3.deleteObject(params, (err, data) => {
-      if (err) {
-        console.log(err);
-        res.sendStatus(400);
-      }
-      console.log(data);
-      res.send({ ok: true });
-    });
+    const { Key } = req.body;
+    await cloudinary.uploader.destroy(Key, { resource_type: "video" });
+    res.send({ ok: true });
   } catch (err) {
     console.log(err);
+    res.sendStatus(400);
   }
 };
 export const addLesson = async (req, res) => {

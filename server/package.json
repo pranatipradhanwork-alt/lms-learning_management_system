@@ -4,14 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon -r esm server.js"
+    "start": "node -r esm server.js",
+    "dev": "nodemon -r esm server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.1110.0",
     "bcrypt": "^5.0.1",
+    "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "csurf": "^1.11.0",
@@ -24,9 +25,13 @@
     "mongoose": "^6.2.7",
     "morgan": "^1.10.0",
     "nanoid": "^3.3.2",
+    "nodemailer": "^6.9.16",
     "nodemon": "^2.0.15",
     "query-string": "^7.1.1",
     "slugify": "^1.6.5",
     "stripe": "^8.216.0"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }

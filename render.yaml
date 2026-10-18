@@ -1,0 +1,50 @@
+# Render blueprint: the Express API and the Next.js website as two free web services.
+# Values marked sync: false are entered in the Render dashboard on first deploy.
+services:
+  - type: web
+    name: lms-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "18"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE
+        sync: false
+      - key: STRIPE_SECRET
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: EMAIL_APP_PASSWORD
+        sync: false
+      - key: STRIPE_REDIRECT_URL
+        sync: false
+      - key: STRIPE_SETTING_REDIRECT
+        sync: false
+      - key: STRIPE_SUCCESS_URL
+        sync: false
+      - key: STRIPE_CANCEL_URL
+        sync: false
+
+  - type: web
+    name: lms-web
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "18"
+      - key: API_URL
+        sync: false
+      # Used by server-side page rendering: API_URL + "/api".
+      - key: API
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_KEY
+        sync: false

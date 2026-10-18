@@ -2,14 +2,12 @@ import User from "../models/user";
 import { hashPassword, comparePassword } from "../utils/auth";
 import jwt from "jsonwebtoken";
 import { nanoid } from "nanoid";
-import AWS from "aws-sdk";
-const awsConfig = {
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKeyId: process.env.AWS_SECRET_ACCESS_KEY_ID,
-  region: process.env.AWS_REGION,
-  apiVersion: process.env.AWS_API_VERSION,
-};
-const SES = new AWS.SES(awsConfig);
+import nodemailer from "nodemailer";
+// Gmail SMTP: EMAIL_FROM is the Gmail address, EMAIL_APP_PASSWORD its app password.
+const mailer = nodemailer.createTransport({
+  service: "gmail",
+  auth: { user: process.env.EMAIL_FROM, pass: process.env.EMAIL_APP_PASSWORD },
+});
 export const register = async (req, res) => {
   try {
     //console.log(req.body);
@@ -81,43 +79,22 @@ export const forgotPassword = async (req, res) => {
       { passwordResetCode: shortCode }
     );
     if (!user) return res.status(400).send("User not found");
-    const params = {
-      Source: process.env.EMAIL_FROM,
-      Destination: {
-        ToAddresses: [email],
-      },
-      Message: {
-        Body: {
-          Html: {
-            Charset: "UTF-8",
-            Data: `
-                        <html>
-                        <h1>Reset password</h1>
-                        <p>Use this code to reset your password</p>
-                        <h2 style = "color:red;">${shortCode}</h2>
-                        <i>lms.com</i>
-                        </html>
-
-                        `,
-          },
-        },
-        Subject: {
-          Charset: "UTF-8",
-          Data: "Reset Password",
-        },
-      },
-    };
-    const emailSent = SES.sendEmail(params).promise();
-    emailSent
-      .then((data) => {
-        console.log(data);
-        res.json({ ok: true });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    await mailer.sendMail({
+      from: `LMS <${process.env.EMAIL_FROM}>`,
+      to: email,
+      subject: "Reset Password",
+      html: `
+        <html>
+        <h1>Reset password</h1>
+        <p>Use this code to reset your password</p>
+        <h2 style = "color:red;">${shortCode}</h2>
+        </html>
+      `,
+    });
+    res.json({ ok: true });
   } catch (err) {
     console.log(err);
+    res.status(400).send("Could not send the reset email. Try again.");
   }
 };
 export const resetPassword = async (req, res) => {

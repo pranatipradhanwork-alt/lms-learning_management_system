@@ -2,12 +2,13 @@
 
 A full-stack learning management system where instructors create and sell video courses and students
 enroll, watch lessons and track their progress. My MCA final-year project (2022), built with Next.js,
-Express and MongoDB, with Stripe for payments and AWS for media and email.
+Express and MongoDB, with Stripe for payments. The 2022 version stored media on AWS S3 and sent email with
+AWS SES; the hosted version uses Cloudinary and Gmail instead, so it runs on free tiers.
 
 ## Features
 
 **Students**
-- Register, log in and reset a forgotten password with a 6-character code sent by email (AWS SES)
+- Register, log in and reset a forgotten password with a 6-character code sent by email
 - Browse published courses; watch free-preview lessons before buying
 - Enroll in free courses, or pay for a course through Stripe Checkout
 - Watch video lessons with Markdown notes, and mark lessons complete or incomplete to track progress
@@ -15,7 +16,7 @@ Express and MongoDB, with Stripe for payments and AWS for media and email.
 **Instructors**
 - Become an instructor by connecting a Stripe account (Stripe Connect onboarding)
 - Create a course with a cover image, description, price and category; save as draft, then publish or unpublish
-- Add, edit, drag-and-drop reorder and remove lessons; upload lesson videos (up to 700 MB) to AWS S3; mark lessons as free preview
+- Add, edit, drag-and-drop reorder and remove lessons; upload lesson videos to Cloudinary; mark lessons as free preview
 - See the student count per course, the Stripe balance and payout settings
 
 **Platform**
@@ -29,8 +30,8 @@ Next.js frontend (pages/, component/)          Express API (server/)
   React 17, Ant Design, Bootstrap   ── /api ──►   routes → controllers → Mongoose models
   custom dev server proxies /api                  auth: bcrypt + JWT in an httpOnly cookie, CSRF tokens
   to the API on port 8000                         ├─ MongoDB: users, courses with lessons, completed lessons
-                                                  ├─ AWS S3: course images and lesson videos
-                                                  ├─ AWS SES: password-reset emails
+                                                  ├─ Cloudinary: course images and lesson videos
+                                                  ├─ Gmail (SMTP): password-reset emails
                                                   └─ Stripe: Checkout, Connect accounts, balance, payouts
 ```
 
@@ -54,12 +55,12 @@ Next.js frontend (pages/, component/)          Express API (server/)
 | Frontend | Next.js 12, React 17, Ant Design, Bootstrap, Sass, react-player, react-markdown, react-toastify |
 | Backend | Node.js, Express, Mongoose, express-jwt, bcrypt, csurf, formidable |
 | Database | MongoDB |
-| Services | Stripe (Checkout, Connect), AWS S3, AWS SES |
-| Hosting | Firebase Hosting config for the static frontend |
+| Services | Stripe (Checkout, Connect), Cloudinary, Gmail SMTP (originally AWS S3 and SES) |
+| Hosting | Render (two free web services, see `render.yaml`), MongoDB Atlas |
 
 ## Run locally
 
-Requires Node.js, a MongoDB database, a Stripe test account and AWS credentials with S3 and SES access.
+Requires Node.js, a MongoDB database, a Stripe test account, a Cloudinary account and a Gmail app password.
 
 ```bash
 # API
@@ -78,8 +79,8 @@ Create `server/.env` (never commit it):
 |---|---|
 | `DATABASE` | MongoDB connection string |
 | `JWT_SECRET` | Secret for signing session tokens |
-| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY_ID`, `AWS_REGION`, `AWS_API_VERSION` | S3 uploads and SES email |
-| `EMAIL_FROM` | Sender address for password-reset emails (verified in SES) |
+| `CLOUDINARY_URL` | Cloudinary credentials for image and video uploads |
+| `EMAIL_FROM`, `EMAIL_APP_PASSWORD` | Gmail address and app password for password-reset emails |
 | `STRIPE_SECRET` | Stripe secret key (use a test key) |
 | `STRIPE_REDIRECT_URL`, `STRIPE_SETTING_REDIRECT`, `STRIPE_SUCCESS_URL`, `STRIPE_CANCEL_URL` | Where Stripe returns the user after onboarding and checkout |
 
