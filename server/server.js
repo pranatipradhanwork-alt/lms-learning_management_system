@@ -24,6 +24,8 @@ readdirSync('./routes').map((r)=> app.use('/api',require(`./routes/${r}`))
  );
 
  
+ // Which commit is running (Render sets RENDER_GIT_COMMIT).
+ app.get("/api/version",(req,res)=>res.json({commit:(process.env.RENDER_GIT_COMMIT||"local").slice(0,7)}));
  app.use(csrfProtection)
  app.get("/api/csrf-token",(req,res) =>{
      res.json({csrfToken:req.csrfToken()});

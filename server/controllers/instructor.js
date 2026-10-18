@@ -4,36 +4,32 @@ import Course from "../models/course";
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET)
 export const makeInstructor= async (req,res) => {
+   // Stripe Connect onboarding is not available for this platform (India), so
+   // instructors join straight away and the callback page grants the role.
+   // Set STRIPE_CONNECT=on to use Stripe's onboarding instead.
    try{
+    if(process.env.STRIPE_CONNECT !== "on"){
+        return res.json({ url: process.env.STRIPE_REDIRECT_URL });
+    }
     const user = await User.findById(req.user._id).exec();
-    console.log('user from database',user);
     if(!user.stripe_account_id){
         const account = await stripe.accounts.create({type: "standard"});
-        console.log("ACCOUNT => ",account.id)
         user.stripe_account_id=account.id;
         await user.save();
     }
-    let accountLink = await stripe.accountLinks.create({
+    const accountLink = await stripe.accountLinks.create({
         account:user.stripe_account_id,
         refresh_url:process.env.STRIPE_REDIRECT_URL,
         return_url:process.env.STRIPE_REDIRECT_URL,
         type:"account_onboarding",
     });
-   // console.log('accountLink from stripe',accountLink);
-    accountLink = Object.assign(accountLink , {
-        "stripe_user[email]":user.email,
-    });
-    console.log('accountLink from stripe',accountLink);
-    //res.send(`${accountLink} ? ${queryString.stringify(accountLink)}`);
-    res.json(accountLink ?accountLink:{} );
+    res.json(accountLink);
 }catch (err){
-    // Stripe Connect isn't available for every platform (for example India);
-    // continue without payouts so the instructor can still create courses.
     console.log("MAKE INSTRUCTOR ERR",err.message);
     res.json({ url: process.env.STRIPE_REDIRECT_URL });
 }
    };
-  export const getAccountStatus =async(req,res) => {
+export const getAccountStatus =async(req,res) => {
        try{
            const user = await User.findById(req.user._id).exec()
            const update = { $addToSet:{role:"Instructor"} };
