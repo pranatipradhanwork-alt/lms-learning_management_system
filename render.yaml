@@ -2,7 +2,7 @@
 # Values marked sync: false are entered in the Render dashboard on first deploy.
 services:
   - type: web
-    name: lms-api
+    name: edemy-lms-api
     runtime: node
     plan: free
     rootDir: server
@@ -33,7 +33,7 @@ services:
         sync: false
 
   - type: web
-    name: lms-web
+    name: edemy-lms-web
     runtime: node
     plan: free
     buildCommand: npm install && npm run build
