@@ -3,7 +3,7 @@ import { Context } from "../../context";
 import UserRoute from "../../component/routes/UserRoute";
 import axios from "axios";
 import { Avatar } from "antd";
-import Link from "next/Link";
+import Link from "next/link";
 import { SyncOutlined, PlayCircleOutlined} from "@ant-design/icons";
 const UserIndex = () => { 
   const {

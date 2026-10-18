@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import InstructorRoute from "../../component/routes/InstructorRoute";
 import { Avatar, Tooltip } from "antd";
-import Link from "next/Link";
+import Link from "next/link";
 import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 const InstructorIndex = () => {
   const [courses, setCourses] = useState([]);

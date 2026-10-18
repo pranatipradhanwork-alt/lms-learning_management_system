@@ -7,7 +7,7 @@ import {
   EyeInvisibleOutlined,
 } from "@ant-design/icons";
 import { FcGoogle } from "react-icons/fc";
-import Link from "next/Link";
+import Link from "next/link";
 import { Context } from "../context";
 import { useRouter } from "next/router";
 import AuthLayout from "../component/layout/authLayout/authLayout";

@@ -6,7 +6,7 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined,
 } from "@ant-design/icons";
-import Link from "next/Link";
+import Link from "next/link";
 import { Context } from "../context";
 import { useRouter } from "next/router";
 import { FcGoogle } from "react-icons/fc";
