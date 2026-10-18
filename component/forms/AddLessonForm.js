@@ -40,6 +40,15 @@ const AddLessonForm = ({values,
                </Tooltip>
            )}
             </div>
+           {!uploading && !(values.video && values.video.Bucket && values.video.Bucket !== "external") && (
+             <input
+               type="url"
+               className="form-control mt-3"
+               placeholder="...or paste a video link (for example an S3 URL)"
+               value={values.video && values.video.Bucket === "external" ? values.video.Location : ""}
+               onChange={e=>setValues({...values,video:e.target.value ? {Location:e.target.value,Bucket:"external",Key:""} : {}})}
+             />
+           )}
              {progress>0 && (
              <Progress className="d-flex justify-content-center pt-2"
              percent={progress}

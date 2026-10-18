@@ -90,8 +90,10 @@ export const removeVideo = async (req, res) => {
     if (req.user._id != req.params.instructorId) {
       return res.status(400).send("Unauthorized");
     }
-    const { Key } = req.body;
-    await cloudinary.uploader.destroy(Key, { resource_type: "video" });
+    const { Bucket, Key } = req.body;
+    if (Bucket !== "external") {
+      await cloudinary.uploader.destroy(Key, { resource_type: "video" });
+    }
     res.send({ ok: true });
   } catch (err) {
     console.log(err);
@@ -266,12 +268,16 @@ export const paidEnrollment = async (req, res) => {
           quantity: 1,
         },
       ],
-      payment_intent_data: {
-        application_fee_amount: Math.round(fee.toFixed(2) * 100),
-        transfer_data: {
-          destination: course.instructor.stripe_account_id,
-        },
-      },
+      ...(course.instructor.stripe_seller && course.instructor.stripe_seller.charges_enabled
+        ? {
+            payment_intent_data: {
+              application_fee_amount: Math.round(fee.toFixed(2) * 100),
+              transfer_data: {
+                destination: course.instructor.stripe_account_id,
+              },
+            },
+          }
+        : {}),
       success_url: `${process.env.STRIPE_SUCCESS_URL}/${course._id}`,
       cancel_url: process.env.STRIPE_CANCEL_URL,
     });

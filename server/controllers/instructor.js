@@ -27,29 +27,29 @@ export const makeInstructor= async (req,res) => {
     //res.send(`${accountLink} ? ${queryString.stringify(accountLink)}`);
     res.json(accountLink ?accountLink:{} );
 }catch (err){
-    console.log("MAKE INSTRUCTOR ERR",err);
-    res.status(400).send(err.message || "Stripe onboarding failed");
+    // Stripe Connect isn't available for every platform (for example India);
+    // continue without payouts so the instructor can still create courses.
+    console.log("MAKE INSTRUCTOR ERR",err.message);
+    res.json({ url: process.env.STRIPE_REDIRECT_URL });
 }
    };
   export const getAccountStatus =async(req,res) => {
        try{
            const user = await User.findById(req.user._id).exec()
-           const account = await stripe.accounts.retrieve(user.stripe_account_id);
-          // console.log("ACCOUNT =>",account);
-           if(!account.charges_enabled){
-               return res.status(401).send("Unauthorized");
-           }else{
-               const statusUpdated = await User.findByIdAndUpdate(user._id,{
-                  stripe_seller:account ,
-                  $addToSet:{role:"Instructor"},
-
-           }, 
-           {new:true}
-           ).select("-password")
+           const update = { $addToSet:{role:"Instructor"} };
+           // Keep the Stripe account only when payouts are really enabled.
+           if(user.stripe_account_id){
+               try{
+                   const account = await stripe.accounts.retrieve(user.stripe_account_id);
+                   if(account.charges_enabled) update.stripe_seller = account;
+               }catch(err){
+                   console.log("STRIPE ACCOUNT STATUS ERR", err.message);
+               }
+           }
+           const statusUpdated = await User.findByIdAndUpdate(user._id, update, {new:true})
+           .select("-password")
            .exec();
-           
            res.json(statusUpdated);
-        }
 
        }catch(err){
            console.log(err)

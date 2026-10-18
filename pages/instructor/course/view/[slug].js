@@ -91,6 +91,10 @@ const CourseView = () => {
     }
   };
   const handleVideoRemove = async () => {
+    if (values.video.Bucket === "external") {
+      setValues({ ...values, video: {} });
+      return;
+    }
     try {
       setUploading(true);
       const { data } = await axios.post(
