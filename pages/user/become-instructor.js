@@ -23,8 +23,8 @@ const BecomeInstructor = () => {
 
        })
        .catch(err => {
-           console.log(err.response.status)
-           toast("Stripe onboarding failed.Try again.");
+           // Show Stripe's reason (for example, Connect not set up) instead of a generic message.
+           toast(`Stripe onboarding failed: ${(err.response && err.response.data) || "Try again."}`);
            setLoading(false);
        })
     };

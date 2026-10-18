@@ -7,13 +7,11 @@ export const makeInstructor= async (req,res) => {
    try{
     const user = await User.findById(req.user._id).exec();
     console.log('user from database',user);
-    if(!user.stripe_account){
-        console.log('inside stripe')
+    if(!user.stripe_account_id){
         const account = await stripe.accounts.create({type: "standard"});
         console.log("ACCOUNT => ",account.id)
         user.stripe_account_id=account.id;
-        user.save();
-    
+        await user.save();
     }
     let accountLink = await stripe.accountLinks.create({
         account:user.stripe_account_id,
@@ -30,6 +28,7 @@ export const makeInstructor= async (req,res) => {
     res.json(accountLink ?accountLink:{} );
 }catch (err){
     console.log("MAKE INSTRUCTOR ERR",err);
+    res.status(400).send(err.message || "Stripe onboarding failed");
 }
    };
   export const getAccountStatus =async(req,res) => {
