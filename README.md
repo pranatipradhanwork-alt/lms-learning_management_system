@@ -95,4 +95,4 @@ The frontend reads `NEXT_PUBLIC_STRIPE_KEY` (Stripe publishable key) from its ow
 
 ## Author
 
-Pranati Pradhan · [GitHub](https://github.com/pranatipradhanwork-alt) · [LinkedIn](https://www.linkedin.com/in/pranati-pradhan-7766b31a7)
+Pranati Pradhan · [GitHub](https://github.com/pranatipradhanwork-alt) · [LinkedIn](https://www.linkedin.com/in/pranati-pradhan-work)
