@@ -9,7 +9,7 @@ require('dotenv').config();
 const csrfProtection =csrf ({cookie:true});
 const app= express();
 mongoose
-.connect(process.env.DATABASE,{
+.connect((process.env.DATABASE || "").trim(),{
     usenewUrlParser:true,
 })
 
